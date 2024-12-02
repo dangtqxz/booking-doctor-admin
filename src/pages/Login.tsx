@@ -1,24 +1,50 @@
-import React, { useState } from "react";
-import { Typography, Input, Button, Form } from "antd";
+import React, { useEffect, useState } from "react";
+import { Typography, Input, Button, Form, message } from "antd";
 import HelmetWrapper from "../components/HelmetWrapper";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { PostWithJson } from "../services/axiosConfig";
 
 const { Title } = Typography;
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  
 
-  const handleLogin = (values: { email: string; password: string }) => {
-    console.log("Email:", values.email);
-    console.log("Password:", values.password);
-    // Thêm logic xử lý đăng nhập ở đây
+  const handleLogin = async (values: { username: string; password: string }) => {
+    try {
+      const response = await PostWithJson<{ tenDangNhap: string; matKhau: string; roleId: string }>(
+        {
+          tenDangNhap: values.username,
+          matKhau: values.password,
+        },
+        "login"
+      );
+
+      if (response.data.tenDangNhap && response.data.matKhau) {
+        localStorage.setItem("userName", response.data.tenDangNhap);
+        localStorage.setItem("roleID", response.data.roleId);
+        message.success("Đăng nhập thành công!");
+        navigate("/admindashboard");
+      } else {
+        message.error("Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!");
+      }
+    } catch (error) {
+      message.error("Có lỗi xảy ra. Vui lòng thử lại sau!");
+    }
   };
 
   const handleForgotPassword = () => {
     navigate("/forgotpassword");
   };
+
+  useEffect(()=> {
+    if(location.pathname === "/login"){
+      
+    }
+  });
 
   return (
     <HelmetWrapper title="Đăng nhập">
@@ -31,14 +57,14 @@ const Login: React.FC = () => {
             onFinish={handleLogin}
           >
             <Form.Item
-              name="email"
-              rules={[{ required: true, message: "Vui lòng nhập email!" }]}
+              name="username"
+              rules={[{ required: true, message: "Vui lòng nhập tên người dùng!" }]}
             >
               <Input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                placeholder="Tên người dùng"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </Form.Item>
 

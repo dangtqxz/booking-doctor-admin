@@ -1,16 +1,28 @@
 import React, { useState } from "react";
 import { Typography, Input, Button, Form, message } from "antd";
 import HelmetWrapper from "../components/HelmetWrapper";
+import { PostWithJson } from "../services/axiosConfig";
 
 const { Title } = Typography;
 
 const ForgotPassword: React.FC = () => {
-  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleForgotPassword = (values: { email: string }) => {
-    console.log("Email for password reset:", values.email);
-    // Thêm logic gửi yêu cầu khôi phục mật khẩu ở đây
-    message.success("Yêu cầu khôi phục mật khẩu đã được gửi!");
+  const handleForgotPassword = async (values: { email: string }) => {
+    try {
+      setLoading(true);
+      const response = await PostWithJson({}, `forgotpassword?email=${values.email}`);
+      
+      if (response.status === 200) {
+        message.success("Thông tin tài khoản đã được gửi vào email của bạn!");
+      } else {
+        message.error("Email không tồn tại trong hệ thống!");
+      }
+    } catch (error) {
+      message.error("Email không tồn tại trong hệ thống!");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -31,14 +43,17 @@ const ForgotPassword: React.FC = () => {
             >
               <Input
                 type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Nhập email của bạn"
               />
             </Form.Item>
 
             <Form.Item>
-              <Button type="primary" htmlType="submit" className="w-full">
+              <Button 
+                type="primary" 
+                htmlType="submit" 
+                className="w-full"
+                loading={loading}
+              >
                 Gửi yêu cầu
               </Button>
             </Form.Item>
